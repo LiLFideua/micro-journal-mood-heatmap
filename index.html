@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Micro Journal Mood Heatmap</title>
+  <style>
+    :root { color-scheme: dark; --bg:#121415; --panel:#1d2221; --text:#f5f4ef; --muted:#a8b0ac; --accent:#a7f3d0; --line:#ffffff20; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:linear-gradient(145deg,#121415,#25302d 55%,#17191f); color:var(--text); font:15px/1.5 Inter, system-ui, sans-serif; }
+    main { width:min(1120px, calc(100% - 28px)); margin:0 auto; padding:28px 0; display:grid; grid-template-columns:380px 1fr; gap:14px; }
+    h1 { margin:0; font-size:clamp(2rem, 6vw, 4rem); line-height:1; letter-spacing:0; }
+    .panel { border:1px solid var(--line); border-radius:8px; background:#ffffff10; padding:16px; }
+    textarea { width:100%; min-height:140px; resize:vertical; border:1px solid var(--line); border-radius:8px; background:#101513; color:var(--text); padding:12px; font:inherit; }
+    button, select { border:1px solid var(--line); border-radius:8px; background:#ffffff12; color:var(--text); padding:10px 12px; font:inherit; cursor:pointer; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:10px 0; }
+    .moods { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+    .mood { min-height:48px; }
+    .mood.active { background:var(--accent); color:#102018; border-color:transparent; font-weight:700; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px; }
+    .stat strong { display:block; font-size:1.8rem; color:var(--accent); }
+    .heatmap { display:grid; grid-template-columns:repeat(26,1fr); gap:4px; }
+    .cell { aspect-ratio:1; border-radius:3px; background:#ffffff12; border:1px solid #ffffff10; }
+    .entries { display:grid; gap:10px; max-height:420px; overflow:auto; }
+    .entry { border-bottom:1px solid var(--line); padding-bottom:10px; }
+    .entry time { color:var(--muted); font-size:13px; }
+    @media (max-width:860px) { main { grid-template-columns:1fr; } .heatmap { grid-template-columns:repeat(13,1fr); } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel">
+      <h1>Micro Journal</h1>
+      <p>One 280-character entry per moment, tagged by mood and visualized over the year.</p>
+      <textarea id="entry" maxlength="280" placeholder="What is worth remembering today?"></textarea>
+      <div class="row"><span id="count">0/280</span><button id="save">Save entry</button><button id="clear">Clear data</button></div>
+      <div class="moods" id="moods"></div>
+      <div class="stats">
+        <div class="stat"><span>Entries</span><strong id="total">0</strong></div>
+        <div class="stat"><span>Streak</span><strong id="streak">0</strong></div>
+        <div class="stat"><span>Top mood</span><strong id="top">-</strong></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="row"><h2>Year Mood Map</h2><select id="year"></select></div>
+      <div class="heatmap" id="heatmap"></div>
+      <h2>Recent Entries</h2>
+      <div class="entries" id="entries"></div>
+    </section>
+  </main>
+  <script>
+    const moodList = [["calm","#a7f3d0"],["happy","#fde68a"],["driven","#93c5fd"],["tired","#c4b5fd"],["rough","#fda4af"]];
+    const store = JSON.parse(localStorage.microJournal || "[]");
+    let selected = moodList[0][0];
+    const entry = document.querySelector("#entry");
+    function key(date) { return date.toISOString().slice(0,10); }
+    function save() { localStorage.microJournal = JSON.stringify(store); }
+    function renderMoods() {
+      document.querySelector("#moods").innerHTML = moodList.map(([m,c]) => `<button class="mood ${m === selected ? "active" : ""}" style="--accent:${c}" data-mood="${m}">${m}</button>`).join("");
+    }
+    function renderYears() {
+      const years = [...new Set([new Date().getFullYear(), ...store.map(e => new Date(e.date).getFullYear())])].sort((a,b)=>b-a);
+      document.querySelector("#year").innerHTML = years.map(y => `<option>${y}</option>`).join("");
+    }
+    function streak() {
+      const days = new Set(store.map(e => e.date.slice(0,10))); let n = 0, d = new Date();
+      while (days.has(key(d))) { n++; d.setDate(d.getDate() - 1); }
+      return n;
+    }
+    function render() {
+      renderMoods(); renderYears();
+      const year = +document.querySelector("#year").value || new Date().getFullYear();
+      const byDay = {};
+      store.forEach(e => { const k = e.date.slice(0,10); byDay[k] = e; });
+      const start = new Date(`${year}-01-01T00:00:00`), cells = [];
+      for (let i=0; i<182; i++) {
+        const d = new Date(start); d.setDate(start.getDate() + i * 2);
+        const item = byDay[key(d)], color = item ? moodList.find(m => m[0] === item.mood)?.[1] : "#ffffff12";
+        cells.push(`<div class="cell" title="${key(d)}${item ? ": " + item.mood : ""}" style="background:${color}"></div>`);
+      }
+      document.querySelector("#heatmap").innerHTML = cells.join("");
+      document.querySelector("#entries").innerHTML = store.slice(-12).reverse().map(e => `<article class="entry"><time>${new Date(e.date).toLocaleString()} - ${e.mood}</time><p>${e.text}</p></article>`).join("") || "<p>No entries yet.</p>";
+      document.querySelector("#total").textContent = store.length;
+      document.querySelector("#streak").textContent = streak();
+      const counts = moodList.map(([m]) => [m, store.filter(e => e.mood === m).length]).sort((a,b)=>b[1]-a[1]);
+      document.querySelector("#top").textContent = counts[0][1] ? counts[0][0] : "-";
+    }
+    entry.addEventListener("input", () => document.querySelector("#count").textContent = `${entry.value.length}/280`);
+    document.querySelector("#moods").onclick = e => { const btn = e.target.closest(".mood"); if (!btn) return; selected = btn.dataset.mood; renderMoods(); };
+    document.querySelector("#save").onclick = () => { if (!entry.value.trim()) return; store.push({ date:new Date().toISOString(), mood:selected, text:entry.value.trim() }); entry.value = ""; document.querySelector("#count").textContent = "0/280"; save(); render(); };
+    document.querySelector("#clear").onclick = () => { if (confirm("Delete all local journal entries?")) { store.length = 0; save(); render(); } };
+    document.querySelector("#year").onchange = render; render();
+  </script>
+</body>
+</html>
