@@ -1,13 +1,24 @@
-# Micro Journal Mood Heatmap
+﻿# Micro Journal Mood Heatmap
 
-A local-first micro journal with mood tagging and a yearly heatmap.
+A private 280-character journal with mood tags, streaks, and yearly heatmap visualization.
 
-## Features
+## Highlights
 
-- 280-character journal entries saved to local storage.
-- Mood tags, recent entries, total count, streak, and top mood.
-- Year heatmap colored by mood.
+- Standalone browser app with no build step or package install.
+- Responsive layout for desktop and mobile screens.
+- Polished interface with clear controls, readable typography, and keyboard-friendly focus states.
+- Local-first behavior where persistence is needed.
 
-## Run
+## Run locally
 
-Open `index.html` in a browser.
+Open index.html directly in a browser, or serve the folder with:
+
+`ash
+python -m http.server 5173
+`
+
+Then open the local URL for this repository.
+
+## Deployment
+
+Deploy the repository root as a static site with GitHub Pages, Netlify, Vercel, or any static host. The entry point is index.html.

@@ -1,4 +1,4 @@
 ﻿# Final Polish
 
-This repository is split from the original idea collection so Micro Journal Mood Heatmap can be tracked, deployed, and iterated independently.
+This repository is maintained as an independent app so Micro Journal Mood Heatmap can be tracked, deployed, and iterated without depending on a larger collection.
 
