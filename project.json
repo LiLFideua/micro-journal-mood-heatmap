@@ -1,0 +1,7 @@
+﻿{
+  "name": "vibe-coding-10-micro-journal-mood-heatmap",
+  "title": "Micro Journal Mood Heatmap",
+  "description": "A 280-character local journal with mood heatmaps and streaks.",
+  "type": "static-browser-app"
+}
+
