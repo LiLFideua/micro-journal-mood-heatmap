@@ -1,7 +1,23 @@
 ﻿{
-    "title":  "Micro Journal Mood Heatmap",
-    "description":  "A private 280-character journal with mood tags, streaks, and yearly heatmap visualization.",
+    "entrypoints":  {
+                        "typescript":  "src/project-manifest.ts",
+                        "html":  "index.html",
+                        "javascript":  "assets/app.js",
+                        "css":  "assets/styles.css",
+                        "python":  "scripts/metadata_check.py"
+                    },
     "name":  "micro-journal-mood-heatmap",
-    "type":  "static-browser-app"
+    "description":  "A private 280-character journal with mood tags, streaks, and yearly heatmap visualization.",
+    "type":  "static-browser-app",
+    "languages":  [
+                      "HTML",
+                      "CSS",
+                      "JavaScript",
+                      "TypeScript",
+                      "Python",
+                      "JSON",
+                      "Markdown"
+                  ],
+    "title":  "Micro Journal Mood Heatmap"
 }
 

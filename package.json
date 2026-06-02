@@ -1,0 +1,10 @@
+﻿{
+    "private":  true,
+    "name":  "micro-journal-mood-heatmap",
+    "version":  "1.1.0",
+    "type":  "module",
+    "scripts":  {
+                    "test":  "node scripts/smoke-test.mjs \u0026\u0026 python scripts/metadata_check.py"
+                }
+}
+
